@@ -1,0 +1,35 @@
+filters:
+  and:
+    - file.inFolder("notes/sections")
+    - 'file.ext == "md"'
+
+formulas:
+  status_icon: 'if(status == "done", "✅", if(status == "wip", "🔄", "🌱"))'
+
+properties:
+  status:
+    displayName: "Status"
+  formula.status_icon:
+    displayName: ""
+  component:
+    displayName: "Component"
+
+views:
+  - type: table
+    name: "Build Tracker"
+    order:
+      - formula.status_icon
+      - file.name
+      - beat
+      - component
+      - status
+      - updated
+    groupBy:
+      property: status
+      direction: ASC
+  - type: cards
+    name: "Sections"
+    order:
+      - file.name
+      - beat
+      - status

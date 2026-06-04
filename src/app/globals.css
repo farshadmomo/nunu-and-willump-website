@@ -1,26 +1,322 @@
 @import "tailwindcss";
 
+/* ----------------------------------------------------------------------------
+   Nunu & Willump — holo-iridescent ice glass design system.
+   All color in OKLCH. Neutrals tinted toward blue. Never #000 / #fff.
+---------------------------------------------------------------------------- */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: oklch(0.15 0.03 255);
+  --ink-2: oklch(0.2 0.035 250);
+  --ink-3: oklch(0.27 0.04 248);
+  --frost: oklch(0.96 0.01 230);
+  --frost-dim: oklch(0.8 0.02 235);
+
+  --ice-cyan: oklch(0.85 0.13 200);
+  --ice-teal: oklch(0.8 0.12 175);
+  --ice-violet: oklch(0.7 0.16 300);
+  --ice-magenta: oklch(0.72 0.18 340);
+
+  --iridescent: linear-gradient(
+    100deg,
+    var(--ice-cyan),
+    var(--ice-teal),
+    var(--ice-violet),
+    var(--ice-magenta),
+    var(--ice-cyan)
+  );
+
+  --shadow-deep: 0 30px 80px -30px oklch(0.05 0.04 260 / 0.8);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-frost: var(--frost);
+  --color-frost-dim: var(--frost-dim);
+  --color-ice-cyan: var(--ice-cyan);
+  --color-ice-teal: var(--ice-teal);
+  --color-ice-violet: var(--ice-violet);
+  --color-ice-magenta: var(--ice-magenta);
+
+  --font-display: var(--font-fredoka);
+  --font-body: var(--font-nunito);
+  --font-mono: var(--font-martian);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--ink);
+  color: var(--frost);
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-weight: 500; /* plump, rounded baseline */
+  line-height: 1.6;
+  background: var(--ink);
+  color: var(--frost);
+  overflow-x: hidden;
+}
+
+/* Lenis hooks */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+/* ---- thin ice scrollbar ---- */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--ink-3);
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ice-teal);
+}
+
+::selection {
+  background: oklch(0.8 0.12 175 / 0.3);
+  color: var(--frost);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ice-cyan);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Tailwind v4 preflight drops the default button cursor; restore it. */
+button:not(:disabled),
+[role="button"],
+a {
+  cursor: pointer;
+}
+
+/* ----------------------------------------------------------------------------
+   Surfaces & effects
+---------------------------------------------------------------------------- */
+
+/* Frosted ice panel: the theme's primary surface. */
+.holo-glass {
+  position: relative;
+  background: color-mix(in oklch, var(--ink-2) 55%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border: 1px solid transparent;
+  border-radius: 18px;
+  box-shadow: var(--shadow-deep), inset 0 1px 0 oklch(0.98 0.01 220 / 0.18);
+  background-clip: padding-box;
+}
+/* iridescent hairline border drawn via a gradient ring */
+.holo-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--iridescent);
+  background-size: 200% 100%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+  animation: iridescent-pan 12s linear infinite;
+}
+
+/* Iridescent fill text. Decorative wordmarks ONLY (never body copy). */
+.iridescent-text {
+  background: var(--iridescent);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: iridescent-pan 8s linear infinite;
+}
+
+/* Chromatic aberration for the hero title only. */
+.chromatic {
+  color: var(--frost);
+  text-shadow:
+    0.03em 0 0 oklch(0.7 0.18 340 / 0.55),
+    -0.03em 0 0 oklch(0.85 0.13 200 / 0.55);
+}
+
+/* Prism light sweep across a headline / loader. */
+.prism-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.prism-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    oklch(0.95 0.08 200 / 0.35) 45%,
+    oklch(0.9 0.1 320 / 0.35) 55%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: prism-sweep 5s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+/* Faint fracture overlay for large glass panels. */
+.cracked-ice::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(115deg, transparent 49.6%, oklch(0.9 0.04 220 / 0.12) 50%, transparent 50.4%),
+    linear-gradient(200deg, transparent 49.7%, oklch(0.9 0.04 220 / 0.08) 50%, transparent 50.3%);
+  background-size: 140px 140px, 90px 90px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.ability-key {
+  font-family: var(--font-mono), monospace;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Ice-holo navbar: frosted glass base + frost grain. The right-to-left
+   iridescent highlight is a scroll-progress fill (see Navbar.jsx). */
+.holo-nav {
+  background: color-mix(in oklch, var(--ink-2) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(1.5);
+  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  overflow: hidden;
+}
+.holo-nav::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: radial-gradient(
+    oklch(0.98 0.01 220 / 0.1) 0.5px,
+    transparent 1px
+  );
+  background-size: 6px 6px;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Keyframes
+---------------------------------------------------------------------------- */
+@keyframes iridescent-pan {
+  to {
+    background-position: 200% 0;
+  }
+}
+@keyframes prism-sweep {
+  0%,
+  100% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+}
+@keyframes snow-fall {
+  to {
+    transform: translateY(110vh);
+  }
+}
+@keyframes snowball-roll {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* loading: snowball rolls left -> right while growing, then resets */
+@keyframes roll-line {
+  0% {
+    left: 0%;
+    width: 16px;
+    height: 16px;
+  }
+  100% {
+    left: 100%;
+    width: 56px;
+    height: 56px;
+  }
+}
+@keyframes roll-spin {
+  to {
+    transform: rotate(1080deg);
+  }
+}
+@keyframes roll-trail {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+/* snow kicked up off the back of the rolling loader snowball */
+@keyframes snow-kick {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-20px, -12px) scale(0);
+    opacity: 0;
+  }
+}
+.loader-flake {
+  position: absolute;
+  bottom: 1px;
+  left: 16%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: oklch(0.98 0.01 220);
+  box-shadow: 0 0 5px oklch(0.9 0.06 210 / 0.7);
+  animation: snow-kick 0.85s ease-out infinite;
+}
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   Reduced motion: kill ambient loops; sections add their own static fallbacks.
+---------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

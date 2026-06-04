@@ -1,0 +1,11 @@
+Model Information:
+* title:	cotton_test_4
+* source:	https://sketchfab.com/3d-models/cotton-test-4-b049a2e6511a4fd0af9cbda39348dafd
+* author:	amhyde (https://sketchfab.com/amhyde)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "cotton_test_4" (https://sketchfab.com/3d-models/cotton-test-4-b049a2e6511a4fd0af9cbda39348dafd) by amhyde (https://sketchfab.com/amhyde) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
