@@ -5,7 +5,7 @@
 export const asset = (p) => encodeURI(p);
 
 // Number of JPGs in public/hero_frames/ (see scripts/extract-frames.mjs).
-export const HERO_FRAME_COUNT = 255;
+export const HERO_FRAME_COUNT = 216;
 export const heroFrameSrc = (i) =>
   asset(`/hero_frames/frame_${String(i).padStart(4, "0")}.jpg`);
 
@@ -70,21 +70,22 @@ export const abilities = [
   },
 ];
 
-// Skins from public/skins/. tier is flavor only.
+// Skins from public/skins/. Names mirror the file names, properly cased.
+// tier is flavor only.
 export const skins = [
-  { name: "Classic", tier: "base", img: "/skins/nunu & willump default.jpg" },
-  { name: "Sasquatch", tier: "legacy", img: "/skins/sasquatch nunu & willump.jpg" },
-  { name: "Workshop", tier: "legacy", img: "/skins/workshop nunu & willump.jpg" },
-  { name: "Nunu Bot", tier: "legacy", img: "/skins/nunu & willump bot.jpg" },
-  { name: "Demolisher", tier: "legacy", img: "/skins/demolisher nunu & willump.jpg" },
-  { name: "Grungy", tier: "legacy", img: "/skins/grungy nunu & willump.jpg" },
-  { name: "TPA", tier: "legacy", img: "/skins/TPA nunu & willump.jpg" },
-  { name: "Zombie", tier: "legacy", img: "/skins/zombie nunu & willump.jpg" },
-  { name: "Papercraft", tier: "epic", img: "/skins/papercraft nunu & willump.jpg" },
-  { name: "Space Groove", tier: "epic", img: "/skins/space groove nunu & willump.jpg" },
-  { name: "Beelump & Friends", tier: "epic", img: "/skins/nunu & beelump.jpg" },
-  { name: "Cosmic Paladins", tier: "epic", img: "/skins/cosmic paladins nunu & willump.jpg" },
-  { name: "Fright Night", tier: "epic", img: "/skins/fright night nunu & willump.jpg" },
+  { name: "Nunu & Willump Default", tier: "base", img: "/skins/nunu & willump default.jpg" },
+  { name: "Sasquatch Nunu & Willump", tier: "legacy", img: "/skins/sasquatch nunu & willump.jpg" },
+  { name: "Workshop Nunu & Willump", tier: "legacy", img: "/skins/workshop nunu & willump.jpg" },
+  { name: "Nunu & Willump Bot", tier: "legacy", img: "/skins/nunu & willump bot.jpg" },
+  { name: "Demolisher Nunu & Willump", tier: "legacy", img: "/skins/demolisher nunu & willump.jpg" },
+  { name: "Grungy Nunu & Willump", tier: "legacy", img: "/skins/grungy nunu & willump.jpg" },
+  { name: "TPA Nunu & Willump", tier: "legacy", img: "/skins/TPA nunu & willump.jpg" },
+  { name: "Zombie Nunu & Willump", tier: "legacy", img: "/skins/zombie nunu & willump.jpg" },
+  { name: "Papercraft Nunu & Willump", tier: "epic", img: "/skins/papercraft nunu & willump.jpg" },
+  { name: "Space Groove Nunu & Willump", tier: "epic", img: "/skins/space groove nunu & willump.jpg" },
+  { name: "Nunu & Beelump", tier: "epic", img: "/skins/nunu & beelump.jpg" },
+  { name: "Cosmic Paladins Nunu & Willump", tier: "epic", img: "/skins/cosmic paladins nunu & willump.jpg" },
+  { name: "Fright Night Nunu & Willump", tier: "epic", img: "/skins/fright night nunu & willump.jpg" },
 ];
 
 export const navLinks = [

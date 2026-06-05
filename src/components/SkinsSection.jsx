@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { skins, asset } from "@/lib/champion";
 
@@ -11,6 +11,14 @@ export default function SkinsSection() {
   const [dir, setDir] = useState(1);
   const count = skins.length;
   const current = skins[active];
+  const listRef = useRef(null);
+
+  // Keep the highlighted name in view inside the (Lenis-exempt) list — so
+  // selecting/arrowing through the longer names always reaches the bottom ones.
+  useEffect(() => {
+    const el = listRef.current?.querySelector('[data-active="true"]');
+    el?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [active]);
 
   const select = useCallback(
     (i) => {
@@ -58,7 +66,9 @@ export default function SkinsSection() {
             SKINS / {String(active + 1).padStart(2, "0")} — {count}
           </p>
           <ul
-            className="flex max-h-[46vh] flex-col gap-0.5 overflow-y-auto pr-2 lg:max-h-[60vh]"
+            ref={listRef}
+            data-lenis-prevent
+            className="flex max-h-[46vh] flex-col gap-0.5 overflow-y-auto overscroll-contain pr-2 lg:max-h-[60vh]"
             role="listbox"
             aria-label="Skin selector"
             tabIndex={0}
@@ -66,7 +76,7 @@ export default function SkinsSection() {
             {skins.map((s, i) => {
               const on = i === active;
               return (
-                <li key={s.img} role="option" aria-selected={on}>
+                <li key={s.img} role="option" aria-selected={on} data-active={on}>
                   <button
                     onClick={() => select(i)}
                     className="flex w-full cursor-pointer items-baseline gap-3 py-1.5 text-left"

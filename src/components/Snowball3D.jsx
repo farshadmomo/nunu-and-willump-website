@@ -4,10 +4,11 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { loadSnowballModel, makeSnowballInstance } from "@/lib/snowballModel";
 
-// Vanilla three.js. Mounted only while the snowball section is near view
-// (parent conditionally renders it). Reads progressRef each frame to roll +
-// grow the ball. Scale + pixel ratio are capped to keep big-scale fillrate sane.
-export default function Snowball3D({ progressRef }) {
+// Vanilla three.js. Mounted once on first approach and kept alive (parent never
+// unmounts it, so the GL context is never rebuilt mid-scroll). Reads progressRef
+// each frame to roll + grow the ball; activeRef gates the render loop so it does
+// zero GL work while off-screen. Scale + pixel ratio capped for big-scale fillrate.
+export default function Snowball3D({ progressRef, activeRef }) {
   const mountRef = useRef(null);
 
   useEffect(() => {
@@ -90,6 +91,12 @@ export default function Snowball3D({ progressRef }) {
     let last = performance.now();
     const tick = () => {
       raf = requestAnimationFrame(tick);
+      // Off-screen: skip all GL work (still cheap to keep the loop primed so we
+      // never pay a restart cost). Reset the clock so dt doesn't jump on return.
+      if (activeRef && !activeRef.current) {
+        last = performance.now();
+        return;
+      }
       const now = performance.now();
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
@@ -126,7 +133,7 @@ export default function Snowball3D({ progressRef }) {
       renderer.dispose();
       if (el.parentNode) el.parentNode.removeChild(el);
     };
-  }, [progressRef]);
+  }, [progressRef, activeRef]);
 
   return <div ref={mountRef} className="absolute inset-0" />;
 }

@@ -22,14 +22,21 @@ export default function SnowballSection() {
   const cardRefs = useRef([]);
   const videoRefs = useRef([]);
   const progressRef = useRef(0);
-  const [active, setActive] = useState(false);
+  const activeRef = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
-  // Only run the WebGL render loop while the section is on (or near) screen.
+  // Mount the WebGL snowball ONCE (on first approach) and never tear it down —
+  // rebuilding the GL context mid-scroll stalls a frame (the lag you'd hit when
+  // replay flings you back up past this section). Visibility only gates the
+  // render loop (see activeRef), not the mount, so idle cost stays zero.
   useEffect(() => {
     const el = root.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([e]) => setActive(e.isIntersecting),
+      ([e]) => {
+        activeRef.current = e.isIntersecting;
+        if (e.isIntersecting) setMounted(true);
+      },
       { rootMargin: "30% 0px 30% 0px" }
     );
     io.observe(el);
@@ -119,7 +126,9 @@ export default function SnowballSection() {
 
         {/* 3D rolling snowball — only mounted while near view */}
         <div className="pointer-events-none absolute inset-0 z-10">
-          {active && <Snowball3D progressRef={progressRef} />}
+          {mounted && (
+            <Snowball3D progressRef={progressRef} activeRef={activeRef} />
+          )}
         </div>
 
         {abilities.map((ability, i) => (
