@@ -2,7 +2,15 @@
 // cover before the loading screen lets the page in, so scroll-scrubbing and
 // the skins carousel never hitch on a cold image. Reports 0..1 progress.
 
-import { HERO_FRAME_COUNT, heroFrameSrc, skins, abilities, asset } from "./champion";
+import {
+  HERO_FRAME_COUNT,
+  heroFrameSrc,
+  skins,
+  abilities,
+  biography,
+  stories,
+  asset,
+} from "./champion";
 import { loadSnowballModel } from "./snowballModel";
 
 export function buildAssetList() {
@@ -11,7 +19,11 @@ export function buildAssetList() {
   );
   const skinImgs = skins.map((s) => asset(s.img));
   const covers = abilities.map((a) => asset(a.cover));
-  return { frames, list: [...frames, ...skinImgs, ...covers] };
+  const storyImgs = [
+    biography.cover,
+    ...stories.flatMap((s) => [s.cover, s.coverEnd].filter(Boolean)),
+  ].map(asset);
+  return { frames, list: [...frames, ...skinImgs, ...covers, ...storyImgs] };
 }
 
 function loadImage(src) {
