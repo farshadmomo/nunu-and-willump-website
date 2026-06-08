@@ -12,7 +12,6 @@ import StoriesSection from "@/components/StoriesSection";
 import SnowballSection from "@/components/SnowballSection";
 import SkinsSection from "@/components/SkinsSection";
 import BiteTransition from "@/components/BiteTransition";
-import EndingScreen from "@/components/EndingScreen";
 
 export default function Home() {
   const [heroFrames, setHeroFrames] = useState(null);
@@ -30,7 +29,6 @@ export default function Home() {
         <SnowballSection />
         <SkinsSection />
         <BiteTransition />
-        <EndingScreen />
       </main>
     </SmoothScroll>
   );

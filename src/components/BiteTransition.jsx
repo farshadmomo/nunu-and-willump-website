@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { BITE_FRAME_COUNT, biteFrameSrc } from "@/lib/champion";
+import EndingScreen from "./EndingScreen";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,112 +12,154 @@ const reduced = () =>
   typeof window !== "undefined" &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// Willump takes a bite: shake, claw slash, white flash, cut to black.
-// Placeholder SVG art, swap real bite frames later.
+// Willump's bite, then the reveal. The frozen-maw clip (a Remotion + Three.js
+// render) is scroll-scrubbed on a canvas: the icy maw gapes, the fangs SNAP, the
+// camera dives through them and the view fades to dark ink. The EndingScreen sits
+// BEHIND the canvas the whole time, so crossfading the dark tail away makes it
+// look like the footer was waiting behind the mouth all along.
 export default function BiteTransition() {
   const root = useRef(null);
   const pinRef = useRef(null);
-  const shakeRef = useRef(null);
-  const flashRef = useRef(null);
-  const blackRef = useRef(null);
-  const clawRef = useRef(null);
+  const canvasRef = useRef(null);
+  const darkRef = useRef(null);
+  const framesRef = useRef(null);
+  const progRef = useRef(0);
+  const drawRef = useRef(() => {});
+  const [ready, setReady] = useState(false);
+
+  // Decode every bite frame up front so the scrub never hitches on a cold image.
+  useEffect(() => {
+    let alive = true;
+    const srcs = Array.from({ length: BITE_FRAME_COUNT }, (_, i) =>
+      biteFrameSrc(i + 1)
+    );
+    const imgs = new Array(srcs.length);
+    let done = 0;
+    srcs.forEach((src, i) => {
+      const img = new Image();
+      const fin = () => {
+        if (!alive) return;
+        imgs[i] = img;
+        if (++done === srcs.length) {
+          framesRef.current = imgs;
+          setReady(true);
+        }
+      };
+      img.onload = () => (img.decode ? img.decode().then(fin, fin) : fin());
+      img.onerror = fin;
+      img.src = src;
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
-    const paths = clawRef.current
-      ? Array.from(clawRef.current.querySelectorAll("path"))
-      : [];
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    const sizeCanvas = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.4);
+      canvas.width = Math.floor(window.innerWidth * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+    };
+
+    const draw = () => {
+      const f = framesRef.current;
+      if (!f || !f.length) return;
+      const idx = Math.min(
+        f.length - 1,
+        Math.max(0, Math.round(progRef.current * (f.length - 1)))
+      );
+      const img = f[idx];
+      if (!img) return;
+      const cw = canvas.width;
+      const ch = canvas.height;
+      const ir = img.width / img.height;
+      const cr = cw / ch;
+      let dw, dh;
+      if (cr > ir) {
+        dw = cw;
+        dh = cw / ir;
+      } else {
+        dh = ch;
+        dw = ch * ir;
+      }
+      ctx.clearRect(0, 0, cw, ch);
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    };
+    drawRef.current = draw;
+
+    sizeCanvas();
+    draw();
 
     if (reduced()) {
-      gsap.set(blackRef.current, { opacity: 1 });
-      gsap.set(paths, { strokeDashoffset: 0, opacity: 1 });
+      // No scrub: skip straight to the revealed ending.
+      gsap.set(canvas, { opacity: 0 });
+      gsap.set(darkRef.current, { opacity: 0 });
       return;
     }
 
-    const ctx = gsap.context(() => {
-      gsap.set(paths, { strokeDasharray: 1, strokeDashoffset: 1 });
+    // start dark (matches the section) with the maw hidden, then fade it in
+    gsap.set(canvas, { opacity: 0 });
+    gsap.set(darkRef.current, { opacity: 1 });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: root.current,
-          start: "top top",
-          end: "+=140%",
-          scrub: 0.4,
-          pin: pinRef.current,
-          anticipatePin: 1,
+    const ctxGsap = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: root.current,
+        start: "top top",
+        end: "+=240%",
+        scrub: 1, // smoother glide so the teeth ease in as you scroll
+        pin: pinRef.current,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const p = self.progress;
+          progRef.current = p;
+          draw();
+          // maw fades up out of the dark as you scroll in (no instant pop)...
+          const inP = gsap.utils.clamp(0, 1, p / 0.1);
+          // ...then the dark tail + backdrop fade away to reveal the ending.
+          const outP = gsap.utils.clamp(0, 1, (p - 0.86) / 0.14);
+          gsap.set(canvas, { opacity: inP * (1 - outP) });
+          gsap.set(darkRef.current, { opacity: 1 - outP });
+        },
+        onRefresh: () => {
+          sizeCanvas();
+          draw();
         },
       });
-
-      // tension shake
-      tl.to(shakeRef.current, {
-        keyframes: {
-          x: [0, -8, 7, -5, 4, 0],
-          y: [0, 5, -6, 4, -3, 0],
-        },
-        duration: 0.35,
-        ease: "none",
-      });
-      // claw slash draws
-      tl.to(
-        paths,
-        { strokeDashoffset: 0, opacity: 1, stagger: 0.06, duration: 0.25, ease: "power2.in" },
-        0.3
-      );
-      // white flash
-      tl.to(flashRef.current, { opacity: 1, duration: 0.08 }, 0.5)
-        .to(flashRef.current, { opacity: 0, duration: 0.22 }, 0.58);
-      // cut to black, hold
-      tl.to(blackRef.current, { opacity: 1, duration: 0.3, ease: "power2.in" }, 0.6);
     }, root);
 
-    return () => ctx.revert();
+    return () => ctxGsap.revert();
   }, []);
 
+  // Frames may finish decoding while we're already parked here — repaint once.
+  useEffect(() => {
+    if (ready) drawRef.current();
+  }, [ready]);
+
   return (
-    <section ref={root} className="relative bg-ink">
-      <div
-        ref={pinRef}
-        className="relative grid h-screen w-full place-items-center overflow-hidden"
-      >
-        <div ref={shakeRef} className="text-center will-change-transform">
-          <p className="ability-key text-xs tracking-[0.45em] text-ice-cyan">
-            WILLUMP IS HUNGRY
-          </p>
-          <p className="mt-4 font-display text-2xl font-bold text-frost-dim sm:text-3xl">
-            nom.
-          </p>
+    <section ref={root} id="end" className="relative bg-ink">
+      <div ref={pinRef} className="relative h-screen w-full overflow-hidden bg-ink">
+        {/* the footer/ending, waiting behind the mouth */}
+        <div className="absolute inset-0">
+          <EndingScreen />
         </div>
 
-        {/* claw slashes */}
-        <svg
-          ref={clawRef}
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
+        {/* dark backdrop: hides the ending while the maw fades in/out over it */}
+        <div
+          ref={darkRef}
+          className="pointer-events-none absolute inset-0"
+          style={{ background: "var(--ink)" }}
           aria-hidden
-        >
-          {[18, 42, 66].map((x, i) => (
-            <path
-              key={i}
-              d={`M${x} -5 L${x - 12} 105`}
-              pathLength="1"
-              fill="none"
-              stroke="oklch(0.97 0.02 215)"
-              strokeWidth="0.6"
-              opacity="0"
-              style={{ filter: "drop-shadow(0 0 4px oklch(0.85 0.13 200))" }}
-            />
-          ))}
-        </svg>
-
-        <div
-          ref={flashRef}
-          className="pointer-events-none absolute inset-0 opacity-0"
-          style={{ background: "oklch(0.99 0.005 220)" }}
         />
-        <div
-          ref={blackRef}
-          className="pointer-events-none absolute inset-0 opacity-0"
-          style={{ background: "oklch(0.08 0.02 260)" }}
+
+        {/* the maw — fades up from the dark, then crossfades out to reveal the ending */}
+        <canvas
+          ref={canvasRef}
+          className="pointer-events-none absolute inset-0 h-full w-full"
+          aria-hidden
         />
       </div>
     </section>

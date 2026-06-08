@@ -19,7 +19,6 @@ export default function EndingScreen() {
 
   return (
     <section
-      id="end"
       className="relative grid min-h-screen place-items-center overflow-hidden px-6"
       style={{ background: "oklch(0.08 0.02 260)" }}
     >

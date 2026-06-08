@@ -9,6 +9,12 @@ export const HERO_FRAME_COUNT = 216;
 export const heroFrameSrc = (i) =>
   asset(`/hero_frames/frame_${String(i).padStart(4, "0")}.jpg`);
 
+// Frozen-maw bite animation frames (see scripts/extract-bite.mjs). Scrubbed by
+// BiteTransition: maw open -> snap -> dive through fangs -> frost white-out.
+export const BITE_FRAME_COUNT = 92;
+export const biteFrameSrc = (i) =>
+  asset(`/bite_frames/frame_${String(i).padStart(4, "0")}.jpg`);
+
 export const champion = {
   name: "Nunu & Willump",
   title: "the Boy and His Yeti",

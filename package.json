@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "frames": "node scripts/extract-frames.mjs"
+    "frames": "node scripts/extract-frames.mjs",
+    "bite": "node scripts/extract-bite.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
